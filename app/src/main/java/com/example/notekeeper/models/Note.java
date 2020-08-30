@@ -1,0 +1,95 @@
+package com.example.notekeeper.models;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public final class Note implements Parcelable {
+    private String mTitle;
+    private String mText;
+    private Course mCourse;
+
+    public static final Creator<Note> CREATOR = new Creator<Note>() {
+        @Override
+        public Note createFromParcel(Parcel source) {
+            return new Note(source);
+        }
+
+        @Override
+        public Note[] newArray(int size) {
+            return new Note[size];
+        }
+    };
+
+    public Note(Course course, String title, String text) {
+        mTitle = title;
+        mText = text;
+        mCourse = course;
+    }
+
+    private Note(Parcel source) {
+        this.mText = source.readString();
+        this.mTitle = source.readString();
+        this.mCourse = source.readParcelable(Course.class.getClassLoader());
+    }
+
+    public Course getCourse() {
+        return mCourse;
+    }
+
+    public void setCourse(Course course) {
+        mCourse = course;
+    }
+
+    public String getTitle() {
+        return mTitle;
+    }
+
+    public void setTitle(String title) {
+        mTitle = title;
+    }
+
+    public String getText() {
+        return mText;
+    }
+
+    public void setText(String text) {
+        mText = text;
+    }
+
+    private String getCompareKey() {
+        return mCourse.getCourseId() + "|" + mTitle + "|" + mText;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mText);
+        dest.writeString(mTitle);
+        dest.writeParcelable(mCourse, 0);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Note that = (Note) o;
+
+        return getCompareKey().equals(that.getCompareKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return getCompareKey().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getCompareKey();
+    }
+
+}
