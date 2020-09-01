@@ -2,7 +2,6 @@ package com.example.notekeeper;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -33,7 +32,7 @@ public class NoteActivity extends AppCompatActivity {
     private Note mNote;
     private Toolbar mToolbar;
     private boolean mIsCancelling;
-    private int mNewNotePosition;
+    private int mNotePosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,16 +72,20 @@ public class NoteActivity extends AppCompatActivity {
     private void readDisplayStateValues() {
         DataManager dm = DataManager.getInstance();
         Intent intent = getIntent();
-        int position = intent.getIntExtra(NoteListActivity.NOTE_POSITION, POSITION_NOTE_SET);
-        mIsNewNote = position == POSITION_NOTE_SET;
+        mNotePosition= intent.getIntExtra(NoteListActivity.NOTE_POSITION, POSITION_NOTE_SET);
+        mIsNewNote = mNotePosition == POSITION_NOTE_SET;
         if(mIsNewNote) {
             // create new note
-            mNewNotePosition = dm.createNewNote();
-            mNote = dm.getNotes().get(mNewNotePosition);
+            mNotePosition = dm.createNewNote();
+            mNote = dm.getNotes().get(mNotePosition);
             return;
         }
+        mNote = dm.getNotes().get(mNotePosition);
+        displayNote();
+    }
 
-        mNote = dm.getNotes().get(position);
+    private void displayNote() {
+        DataManager dm = DataManager.getInstance();
         int courseIndex = dm.getCourses().indexOf(mNote.getCourse());
         mSpinnerCourses.setSelection(courseIndex);
         mEditTextNoteText.setText(mNote.getText());
@@ -130,12 +133,22 @@ public class NoteActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void nextNote() {
+        saveNote();
+        ++mNotePosition;
+        DataManager dm = DataManager.getInstance();
+        mNote = dm.getNotes().get(mNotePosition);
+        saveOriginalNoteValues();
+        displayNote();
+        invalidateOptionsMenu();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
         if(mIsCancelling) {
             if(mIsNewNote) {
-                DataManager.getInstance().removeNote(mNewNotePosition);
+                DataManager.getInstance().removeNote(mNotePosition);
             }else {
                 storePreviousNoteValues();
             }
@@ -150,6 +163,14 @@ public class NoteActivity extends AppCompatActivity {
         if(null != outState) {
             mNoteActivityViewModel.saveState(outState);
         }
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        //Disable go next note when we are at the last note
+        boolean enabled = (DataManager.getInstance().getNotes().size() - 1) > mNotePosition;
+        menu.findItem(R.id.action_next_note).setEnabled(enabled);
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -171,12 +192,16 @@ public class NoteActivity extends AppCompatActivity {
             sendEmail();
             return true;
         }
-
+        if (id == R.id.action_next_note) {
+            nextNote();
+            return true;
+        }
         if (id == R.id.action_cancel) {
             mIsCancelling = true;
             finish();
             return true;
         }
+
 
 
         return super.onOptionsItemSelected(item);

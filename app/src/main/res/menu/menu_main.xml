@@ -3,11 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.notekeeper.NoteActivity">
     <item
+        android:id="@+id/action_cancel"
+        android:icon="@android:drawable/ic_menu_revert"
+        android:title="@string/action_cancel"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_next_note"
+        android:icon="@android:drawable/ic_media_next"
+        android:title="@string/action_next_note"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_send_email"
+        android:icon="@android:drawable/ic_menu_share"
         android:orderInCategory="100"
         android:title="@string/action_send_email"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_cancel"
-        android:title="@string/action_cancel" />
+        app:showAsAction="ifRoom" />
 </menu>
